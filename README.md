@@ -1,4 +1,4 @@
-# Documento de Requerimientos del Producto (PRD)
+# 📄 Mario grita y se hace rico - Product Requirements Document (PRD)
 
 ## Requerimientos del Sistema
 
@@ -12,7 +12,6 @@
 - Mario será representado únicamente por un rectángulo.
 - Las nubes y las monedas serán representadas por elipses.
 - No se utilizarán gráficos avanzados ni sprites en esta versión inicial; el enfoque será funcional y esquemático.
-# 📄 Mario grita y se hace rico - Product Requirements Document (PRD)
 
 ## Visión General
 
