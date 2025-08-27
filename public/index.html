@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Grita y Se Hace Rico</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #87CEEB;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .connected { background-color: #4CAF50; }
+        .disconnected { background-color: #f44336; }
+        .game-container {
+            display: flex;
+            justify-content: center;
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .microphone-level {
+            background: #f0f0f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .microphone-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFC107, #f44336);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍄 Mario Grita y Se Hace Rico 🪙</h1>
+            <p>¡Grita para hacer que Mario salte y recoja monedas!</p>
+        </div>
+        
+        <div class="status">
+            <div>
+                <span class="status-indicator" id="serialStatus"></span>
+                <strong>Arduino Esplora:</strong> <span id="serialText">Desconectado</span>
+            </div>
+            <div>
+                <span class="status-indicator" id="socketStatus"></span>
+                <strong>Conexión:</strong> <span id="socketText">Desconectado</span>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <!-- El canvas de p5.js se insertará aquí -->
+        </div>
+        
+        <div class="controls">
+            <h3>🎤 Control por Micrófono</h3>
+            <p>Nivel actual: <span id="micValue">0</span> / 1024 (<span id="micPercent">0</span>%)</p>
+            <div class="microphone-level">
+                <div class="microphone-bar" id="micBar"></div>
+            </div>
+            <p><small>💡 Grita para hacer que Mario salte más alto. El salto depende de la intensidad del sonido.</small></p>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
