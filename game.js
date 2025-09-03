@@ -52,11 +52,11 @@ function setup() {
     // Crear nubes decorativas
     initializeClouds();
     
-    // Configurar comunicación serial
-    setupSerial();
-    
     // Configurar eventos de botones
     setupUI();
+    
+    // Configurar comunicación serial después de que todo esté listo
+    setTimeout(setupSerial, 500);
     
     console.log('🍄 Mario Grita y Se Hace Rico - Inicializado');
 }
@@ -247,6 +247,11 @@ function updateUI() {
 }
 
 function drawWaitingMessage() {
+    if (typeof p5.SerialPort === 'undefined') {
+        // Modo prueba - no mostrar mensaje de espera
+        return;
+    }
+    
     fill(0, 0, 0, 150);
     rect(0, 0, width, height);
     
@@ -261,18 +266,42 @@ function drawWaitingMessage() {
 // === COMUNICACIÓN SERIAL ===
 
 function setupSerial() {
-    serial = new p5.SerialPort();
+    console.log('🔧 Intentando configurar comunicación serial...');
     
-    // Callbacks de conexión
-    serial.on('connected', serverConnected);
-    serial.on('list', gotList);
-    serial.on('data', gotData);
-    serial.on('error', gotError);
-    serial.on('open', gotOpen);
-    serial.on('close', gotClose);
+    // Verificar que p5 esté disponible
+    if (typeof p5 === 'undefined') {
+        console.error('❌ p5.js no está disponible');
+        return;
+    }
     
-    // Listar puertos disponibles
-    serial.list();
+    // Verificar que p5.SerialPort esté disponible
+    if (typeof p5.SerialPort === 'undefined') {
+        console.warn('⚠️ p5.SerialPort no está disponible');
+        console.log('💡 Modo prueba: Usa ESPACIO para saltar');
+        gameState = 'playing'; // Permitir modo prueba
+        return;
+    }
+    
+    try {
+        serial = new p5.SerialPort();
+        
+        // Callbacks de conexión
+        serial.on('connected', serverConnected);
+        serial.on('list', gotList);
+        serial.on('data', gotData);
+        serial.on('error', gotError);
+        serial.on('open', gotOpen);
+        serial.on('close', gotClose);
+        
+        // Listar puertos disponibles
+        serial.list();
+        
+        console.log('✅ p5.SerialPort configurado correctamente');
+    } catch (error) {
+        console.error('❌ Error configurando p5.SerialPort:', error);
+        console.log('💡 Modo prueba: Usa ESPACIO para saltar');
+        gameState = 'playing'; // Permitir modo prueba si hay error
+    }
 }
 
 function serverConnected() {
@@ -344,6 +373,11 @@ function setupUI() {
 }
 
 function connectArduino() {
+    if (!serial) {
+        showError('Error: Comunicación serial no inicializada. Recarga la página.');
+        return;
+    }
+    
     console.log('🔌 Intentando conectar a:', portName);
     updateConnectionStatus('Conectando...', 'connecting');
     
@@ -353,12 +387,23 @@ function connectArduino() {
     } catch (error) {
         console.error('❌ Error al conectar:', error);
         showError('No se pudo conectar al Arduino. Verifica que esté conectado y que p5.serialcontrol esté ejecutándose.');
+        document.getElementById('connect-btn').disabled = false;
     }
 }
 
 function disconnectArduino() {
+    if (!serial) {
+        console.log('⚠️ Serial no inicializado');
+        return;
+    }
+    
     console.log('🔌 Desconectando Arduino');
-    serial.close();
+    try {
+        serial.close();
+    } catch (error) {
+        console.error('❌ Error al desconectar:', error);
+    }
+    
     document.getElementById('connect-btn').disabled = false;
     document.getElementById('connect-btn').textContent = '🔌 Conectar Arduino';
 }
@@ -392,16 +437,18 @@ function hideError() {
 
 // Detectar teclas para pruebas sin Arduino
 function keyPressed() {
-    // Tecla ESPACIO para simular salto (solo para pruebas)
-    if (key === ' ' && !isConnected) {
-        console.log('🧪 Modo prueba: Salto con ESPACIO');
+    // Tecla ESPACIO para simular salto
+    if (key === ' ') {
+        if (!isConnected) {
+            console.log('🧪 Modo prueba: Salto con ESPACIO');
+        }
         micValue = 500; // Simular nivel de micrófono
         if (mario.onGround) {
             jump();
         }
         // Resetear después de un momento
         setTimeout(() => {
-            micValue = 0;
+            if (!isConnected) micValue = 0;
         }, 100);
     }
     

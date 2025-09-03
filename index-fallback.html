@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍄 Mario Grita y Se Hace Rico</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Cargar p5.js desde CDN principal -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>🍄 Mario Grita y Se Hace Rico</h1>
+            <div id="connection-status">
+                <span id="status-text">Desconectado</span>
+                <button id="connect-btn">🔌 Conectar Arduino</button>
+            </div>
+        </header>
+        
+        <div id="game-info">
+            <div class="info-panel">
+                <span>Puntuación: <strong id="score">0</strong></span>
+            </div>
+            <div class="info-panel">
+                <span>Nivel de Voz: <strong id="mic-level">0</strong></span>
+            </div>
+        </div>
+        
+        <div id="game-canvas"></div>
+        
+        <div id="controls-help">
+            <h3>🎮 Controles</h3>
+            <p>🎤 <strong>Voz baja:</strong> Salto pequeño</p>
+            <p>🎤 <strong>Voz media:</strong> Salto medio</p>
+            <p>🎤 <strong>Voz fuerte:</strong> Salto alto</p>
+            <p>🔇 <strong>Silencio:</strong> Mario en el suelo</p>
+            <p><strong>Modo Prueba:</strong> ESPACIO = Saltar | R = Reiniciar</p>
+        </div>
+        
+        <div id="error-message" class="hidden">
+            <p id="error-text"></p>
+            <button id="retry-btn">🔄 Reintentar</button>
+        </div>
+    </div>
+    
+    <!-- Intentar cargar p5.serialport con fallback -->
+    <script>
+        // Función para cargar p5.serialport con múltiples intentos
+        function loadSerialPort() {
+            const scripts = [
+                'https://cdn.jsdelivr.net/gh/p5-serial/p5.serialport.js@main/lib/p5.serialport.js',
+                'https://unpkg.com/p5.serialport@0.0.28/lib/p5.serialport.js',
+                'https://rawcdn.githack.com/p5-serial/p5.serialport.js/main/lib/p5.serialport.js'
+            ];
+            
+            let currentScript = 0;
+            
+            function tryLoadScript() {
+                if (currentScript >= scripts.length) {
+                    console.warn('⚠️ No se pudo cargar p5.serialport - funcionando en modo prueba');
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = scripts[currentScript];
+                
+                script.onload = function() {
+                    console.log('✅ p5.serialport cargado desde:', scripts[currentScript]);
+                };
+                
+                script.onerror = function() {
+                    console.warn('❌ Error cargando:', scripts[currentScript]);
+                    currentScript++;
+                    tryLoadScript();
+                };
+                
+                document.head.appendChild(script);
+            }
+            
+            tryLoadScript();
+        }
+        
+        // Cargar p5.serialport después de que p5.js esté listo
+        if (typeof p5 !== 'undefined') {
+            loadSerialPort();
+        } else {
+            window.addEventListener('load', loadSerialPort);
+        }
+    </script>
+    
+    <script src="game.js"></script>
+</body>
+</html>
