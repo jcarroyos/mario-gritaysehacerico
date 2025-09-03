@@ -306,34 +306,53 @@ function setupSerial() {
 }
 
 function serverConnected() {
-    console.log('📡 Conectado a p5.serialcontrol');
+    console.log('📡 Conectado a p5.serialcontrol en localhost:8081');
     updateConnectionStatus('Servidor conectado', 'connected');
+    hideError(); // Ocultar errores previos
 }
 
 function gotList(thelist) {
-    console.log('📋 Puertos disponibles:', thelist);
+    console.log('📋 Puertos seriales disponibles:', thelist);
+    
+    // Verificar si COM12 está disponible
+    if (thelist.includes(portName)) {
+        console.log('✅ Puerto', portName, 'encontrado');
+    } else {
+        console.warn('⚠️ Puerto', portName, 'no encontrado');
+        
+        // Sugerir puertos COM comunes en Windows
+        const commonPorts = thelist.filter(port => port.includes('COM'));
+        if (commonPorts.length > 0) {
+            console.log('💡 Puertos COM disponibles:', commonPorts);
+            showError('Puerto COM12 no encontrado. Puertos disponibles: ' + commonPorts.join(', ') + 
+                     '\n\nPuedes cambiar el puerto en el código (variable portName) o verificar la conexión del Arduino.');
+        }
+    }
 }
 
 function gotData() {
     let currentString = serial.readLine();
-    if (currentString.length > 0) {
+    if (currentString && currentString.length > 0) {
         try {
             // Limpiar datos y procesar CSV del Arduino
             currentString = currentString.trim();
             let sensorData = currentString.split(',');
             
             if (sensorData.length >= 6) {
-                micValue = parseInt(sensorData[5]); // Posición 5 = micrófono
+                let newMicValue = parseInt(sensorData[5]); // Posición 5 = micrófono
                 
                 // Verificar que el valor del micrófono sea válido
-                if (!isNaN(micValue) && micValue >= 0 && micValue <= 1024) {
+                if (!isNaN(newMicValue) && newMicValue >= 0 && newMicValue <= 1024) {
+                    micValue = newMicValue;
+                    
                     // Iniciar juego si no está jugando
                     if (gameState === 'waiting') {
                         gameState = 'playing';
                         console.log('🎮 ¡Juego iniciado! Datos recibidos del Arduino');
+                        console.log('📊 Primer valor de micrófono:', micValue);
                     }
                 } else {
-                    console.warn('⚠️ Valor de micrófono inválido:', micValue);
+                    console.warn('⚠️ Valor de micrófono inválido:', newMicValue);
                 }
             } else {
                 console.warn('⚠️ Datos incompletos recibidos:', currentString);
@@ -346,12 +365,20 @@ function gotData() {
 
 function gotError(theerror) {
     console.error('❌ Error serial:', theerror);
-    updateConnectionStatus('Error de conexión', 'error');
-    showError('Error de conexión con Arduino: ' + theerror);
+    
+    // Mensaje específico para error de conexión a p5.serialcontrol
+    if (!theerror || theerror === undefined) {
+        updateConnectionStatus('p5.serialcontrol no disponible', 'error');
+        showError('Error: p5.serialcontrol no está ejecutándose en Windows.\n\nPasos para solucionarlo:\n\n1. Descarga "p5.serialcontrol-win32-x64.zip" desde:\n   https://github.com/p5-serial/p5.serialcontrol/releases\n\n2. Extrae el archivo y ejecuta "p5.serialcontrol.exe"\n\n3. Si Windows bloquea la ejecución:\n   - Click derecho → Propiedades → Desbloquear\n   - O ejecutar como Administrador\n\n4. Verifica que el Arduino esté en COM12\n\n5. Asegúrate de que el Firewall de Windows permita la conexión en puerto 8081');
+    } else {
+        updateConnectionStatus('Error de conexión', 'error');
+        showError('Error de conexión con Arduino: ' + theerror);
+    }
 }
 
 function gotOpen() {
-    console.log('✅ Puerto serial abierto');
+    console.log('✅ Puerto serial abierto:', portName);
+    console.log('🎤 Esperando datos del micrófono...');
     updateConnectionStatus('Arduino conectado', 'connected');
     isConnected = true;
     hideError();
@@ -393,8 +420,8 @@ function connectArduino() {
     updateConnectionStatus('Conectando...', 'connecting');
     
     try {
-        // Abrir puerto con velocidad específica
-        serial.open(portName, {baudRate: baudRate});
+        // Abrir puerto con la sintaxis correcta de p5.serialport
+        serial.openPort(portName);
         document.getElementById('connect-btn').disabled = true;
     } catch (error) {
         console.error('❌ Error al conectar:', error);
@@ -411,7 +438,7 @@ function disconnectArduino() {
     
     console.log('🔌 Desconectando Arduino');
     try {
-        serial.close();
+        serial.closePort();
     } catch (error) {
         console.error('❌ Error al desconectar:', error);
     }

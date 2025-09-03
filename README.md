@@ -48,19 +48,25 @@
 
 ### Instalación Local
 ```bash
-# 1. Instalar p5.serialcontrol (bridge requerido)
+# 1. Instalar p5.serialcontrol (bridge requerido para Windows)
 # Descargar: https://github.com/p5-serial/p5.serialcontrol/releases
-# Ejecutar: p5.serialcontrol.exe
+# Archivo: p5.serialcontrol-win32-x64.zip
+# Extraer y ejecutar: p5.serialcontrol.exe
+# Si Windows bloquea: Click derecho → Propiedades → Desbloquear
 
-# 2. Clonar proyecto
+# 2. Verificar puerto Arduino en Windows
+# Abrir: Device Manager → Ports (COM & LPT)
+# Buscar: Arduino Esplora (debería aparecer como COM12 o similar)
+
+# 3. Clonar proyecto
 git clone [repositorio]
 cd mario-gritaysehacerico
 
-# 3. Servir archivos localmente
+# 4. Servir archivos localmente
 python -m http.server 8000
 # O usar cualquier servidor web local
 
-# 4. Abrir navegador
+# 5. Abrir navegador
 http://localhost:8000
 ```
 

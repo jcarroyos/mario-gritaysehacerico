@@ -143,6 +143,36 @@ header h1 {
     text-align: center;
 }
 
+#controls-help h4 {
+    color: #3498db;
+    margin: 20px 0 10px 0;
+    font-size: 1.2em;
+}
+
+#controls-help ol {
+    margin: 10px 0 10px 20px;
+    font-size: 1em;
+}
+
+#controls-help ol li {
+    margin: 5px 0;
+    padding: 3px 0;
+}
+
+#controls-help code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e74c3c;
+}
+
+#controls-help em {
+    font-style: italic;
+    color: #7f8c8d;
+}
+
 #controls-help p {
     margin: 8px 0;
     font-size: 1.1em;
