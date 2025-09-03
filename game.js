@@ -10,7 +10,8 @@ let gameState = 'waiting'; // 'waiting', 'playing', 'gameOver'
 
 // Variables de comunicación serial
 let serial;
-let portName = 'COM12'; // Configurar según tu sistema
+let portName = 'COM12'; // Puerto configurado específicamente
+let baudRate = 9600; // Velocidad en baudios
 let isConnected = false;
 let micValue = 0;
 let lastJumpTime = 0;
@@ -317,18 +318,28 @@ function gotData() {
     let currentString = serial.readLine();
     if (currentString.length > 0) {
         try {
-            // Procesar datos CSV del Arduino
+            // Limpiar datos y procesar CSV del Arduino
+            currentString = currentString.trim();
             let sensorData = currentString.split(',');
+            
             if (sensorData.length >= 6) {
                 micValue = parseInt(sensorData[5]); // Posición 5 = micrófono
                 
-                // Iniciar juego si no está jugando
-                if (gameState === 'waiting') {
-                    gameState = 'playing';
+                // Verificar que el valor del micrófono sea válido
+                if (!isNaN(micValue) && micValue >= 0 && micValue <= 1024) {
+                    // Iniciar juego si no está jugando
+                    if (gameState === 'waiting') {
+                        gameState = 'playing';
+                        console.log('🎮 ¡Juego iniciado! Datos recibidos del Arduino');
+                    }
+                } else {
+                    console.warn('⚠️ Valor de micrófono inválido:', micValue);
                 }
+            } else {
+                console.warn('⚠️ Datos incompletos recibidos:', currentString);
             }
         } catch (error) {
-            console.error('❌ Error procesando datos:', error);
+            console.error('❌ Error procesando datos:', error, 'Datos:', currentString);
         }
     }
 }
@@ -378,15 +389,16 @@ function connectArduino() {
         return;
     }
     
-    console.log('🔌 Intentando conectar a:', portName);
+    console.log('🔌 Conectando a:', portName, 'a', baudRate, 'baudios');
     updateConnectionStatus('Conectando...', 'connecting');
     
     try {
-        serial.open(portName);
+        // Abrir puerto con velocidad específica
+        serial.open(portName, {baudRate: baudRate});
         document.getElementById('connect-btn').disabled = true;
     } catch (error) {
         console.error('❌ Error al conectar:', error);
-        showError('No se pudo conectar al Arduino. Verifica que esté conectado y que p5.serialcontrol esté ejecutándose.');
+        showError('No se pudo conectar al Arduino en ' + portName + '. Verifica que esté conectado y que p5.serialcontrol esté ejecutándose.');
         document.getElementById('connect-btn').disabled = false;
     }
 }
